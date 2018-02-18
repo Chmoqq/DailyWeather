@@ -2,16 +2,16 @@ package com.example.ivan.dailyweather;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
+import android.app.AlertDialog;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
-import android.support.annotation.IntegerRes;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -31,7 +31,6 @@ import android.widget.Toast;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,34 +71,23 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
         PlaceholderFragment.activity = MainActivity.this;
-
-        // Set up the ViewPager with the sections adapter.
-        mViewPager = findViewById(R.id.container);
+        mViewPager = findViewById(R.id.container1);
         mViewPager.setAdapter(mSectionsPagerAdapter);
     }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
@@ -253,7 +241,6 @@ public class MainActivity extends AppCompatActivity {
             rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
             cityTextView = rootView.findViewById(R.id.city_text_view);
-            backgroundImageView = rootView.findViewById(R.id.background_image_view);
             detailsTextView = rootView.findViewById(R.id.description_text_view);
             currentTempTextView = rootView.findViewById(R.id.temp_text_view);
             iconTextView = rootView.findViewById(R.id.icon_text_view);
@@ -262,6 +249,37 @@ public class MainActivity extends AppCompatActivity {
             minTemp = rootView.findViewById(R.id.min_temp);
             pressure = rootView.findViewById(R.id.pressure);
             humidity = rootView.findViewById(R.id.humidity);
+            backgroundImageView = rootView.findViewById(R.id.background_image_view);
+            FloatingActionButton fab = rootView.findViewById(R.id.fab);
+            backgroundImageView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    for (int i = 0; i <= cities.size(); i++) {
+                        if (getArguments().getInt(ARG_SECTION_NUMBER) == i) {
+                            AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
+                            if (getArguments().getInt(ARG_SECTION_NUMBER) == 0) {
+                                Snackbar.make(view, "MEME", Snackbar.LENGTH_SHORT).show();
+                            } else {
+                                final int finalI = i;
+                                Snackbar.make(view, "Delete" + " " + cities.get(i - 1) + " ?", Snackbar.LENGTH_LONG).setAction("SURE ?", new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                        cities.remove(finalI - 1);
+                                        updateUI();
+                                    }
+                                }).show();
+                            }
+                        }
+                    }
+                    return true;
+                }
+            });
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Snackbar.make(view, "meme", Snackbar.LENGTH_LONG).setAction("meme1", null).show();
+                }
+            });
 
             refresher.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
                 @Override
@@ -290,6 +308,7 @@ public class MainActivity extends AppCompatActivity {
             return super.onOptionsItemSelected(item);
 
         }
+
     }
 
     /**
@@ -305,15 +324,25 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public Fragment getItem(int position) {
-            // getItem is called to instantiate the fragment for the given page.
-            // Return a PlaceholderFragment (defined as a static inner class below).
-
             if (position >= fragmentCache.size()) {
                 PlaceholderFragment pf = PlaceholderFragment.newInstance(position);
                 fragmentCache.add(pf);
             }
 
             return fragmentCache.get(position);
+        }
+
+        @Override
+        public Object instantiateItem(ViewGroup container, final int position) {
+            LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+            View fragmentView = inflater.inflate(R.layout.fragment_main, container);
+            fragmentView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    System.out.println("pos:" + position);
+                }
+            });
+            return super.instantiateItem(container, position);
         }
 
         @Override
